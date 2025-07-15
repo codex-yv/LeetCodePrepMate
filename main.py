@@ -3,6 +3,24 @@ from PIL import Image, ImageTk
 import os
 import customtkinter as ctk
 from tkinter import ttk
+from utils import helper
+
+all_data_by_id = helper.getDatabyId()
+
+def on_enter_search(event):
+    global all_data_by_id
+    entry_val = search_entry.get()
+    FindClass = helper.FindDataByID()
+    r_val = FindClass.findDatabyId(k=entry_val, s=all_data_by_id)
+
+    if r_val is None:
+        q_name.configure(text = FindClass.question)
+        q_type_val.configure(text = FindClass.difficulty)
+        q_accept_val.configure(text = FindClass.acceptance)
+        ttl_companies.configure(text = f"Total Companies:{FindClass.total}")
+        q_link.configure(text = FindClass.link)
+
+
 win = Tk()
 
 win.title("LeetCodePrepMate-Solve the right questions for your dream companies.")
@@ -51,6 +69,8 @@ info_frame.place(x = 460, y = 50)
 search_entry = ctk.CTkEntry(info_frame, font=("poppins", 15), fg_color="white", bg_color="white", border_width=1, border_color="black",
                             placeholder_text="Search Question Number", height=40, width=300, corner_radius=20)
 search_entry.pack(side = 'top', anchor = 'n', pady = 20)
+
+search_entry.bind("<Return>", on_enter_search)
 
 ques_info_frame = ctk.CTkFrame(info_frame, fg_color="white", height=150, corner_radius=20, border_width=1, border_color="black")
 ques_info_frame.propagate(False)
