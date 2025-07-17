@@ -1,5 +1,5 @@
-s = {1:{"Companies_List":[{"Company":"c1", "frequency":0.322323 }], "acceptance":32, "difficulty":"Medium", "Link":"https://"}}
-s2 = {"company_name":[{"id":1, "question":"q1", "frequency": 0.2323, "difficulty":"medium", "acceptance":45 }]}
+# s = {1:{"Companies_List":[{"Company":"c1", "frequency":0.322323 }], "acceptance":32, "difficulty":"Medium", "Link":"https://"}}
+s2 = {"company_name":[{"id":1, "question":"q1", "frequency": 0.2323, "difficulty":"medium", "acceptance":45, "link":"https" }]}
 
 import os
 import csv
