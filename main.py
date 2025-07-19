@@ -4,8 +4,7 @@ from tkinter import ttk
 from tkinter import messagebox
 from PIL import Image, ImageTk
 import os
-from utils import searchById, searchByCompany
-
+from utils import searchById, searchByCompany, updateDash, duplicatesPrevent
 all_data_by_id = searchById.getDatabyId()
 all_company = searchByCompany.getDataByCompany()
 
@@ -67,8 +66,9 @@ def dropDown(words):
 
 char_list = []
 comp_name_glo = []
+q_links = ["Not Found"]
 def on_enter_search(event):
-    global all_data_by_id, all_company, comp_name_glo
+    global all_data_by_id, all_company, comp_name_glo, q_links
     if cb_for_id.get():
         entry_val = search_entry.get()
         FindClass = searchById.FindDataByID()
@@ -80,9 +80,15 @@ def on_enter_search(event):
             q_accept_val.configure(text = FindClass.acceptance)
             ttl_companies.configure(text = f"Total Companies:{FindClass.total}")
             q_link.configure(text = FindClass.link)
-
+            q_links.insert(0, FindClass.link)
             clear_show_tree_for_id()
             show_tree_for_id(FindClass.companies)
+
+            status_ques = duplicatesPrevent.append_to_history("Questions", entry_val)
+            if status_ques != 404:
+                updateDash.update_stat("Total Questions Searched")
+                value_ques = updateDash.get_stat("Total Questions Searched")
+                question_value.configure(text = value_ques)
         elif r_val == 101:
             messagebox.showerror("No Input", "First enter the question number!")
         else:
@@ -102,7 +108,24 @@ def on_enter_search(event):
             clear_show_tree_for_comp()
             show_tree_for_comp(data = company.data_ldict)
 
+            status_comp = duplicatesPrevent.append_to_history("Companies", comp_name)
+            if status_comp!=404:
+                updateDash.update_stat("Total Companies Searched")
+                value_comp = updateDash.get_stat("Total Companies Searched")
+                company_value.configure(text = value_comp)
 
+def copylink_by_id():
+    global q_link, q_links
+    link = q_link.cget("text").replace("Question Link: ", "")
+    win.clipboard_clear()
+    win.clipboard_append(link)
+    if q_link.cget("text").split(":")[-1] == q_links[0].split(":")[-1]:
+        status_link = duplicatesPrevent.append_to_history("Links", q_links[0].split(":")[-1])
+        if status_link != 404:
+            updateDash.update_stat("Total Link Copied")
+            value_link = updateDash.get_stat("Total Questions Searched")
+            link_value.configure(text = value_link)
+    messagebox.showinfo("Copied", f"Content copied to clipboard:\n{link}")
 
 company = searchByCompany.FindDataByCompany()
 def on_keypress(event):
@@ -176,16 +199,23 @@ def show_tree_for_id(data:list[dict])->None:
     tree_for_id.pack(side="left", fill="both", expand=True)
     vsb.pack(side="right", fill="y")
 
-def copy_to_clipboard(text):
+def copy_to_clipboard(text, ques):
     win.clipboard_clear()
     win.clipboard_append(text)
-    messagebox.showinfo("Copied", f"Content copied to clipboard:\n{text}")
+    status_link = duplicatesPrevent.append_to_history("Links", text.split(":")[-1])
+    if status_link != 404:
+        updateDash.update_stat("Total Link Copied")
+        value_link = updateDash.get_stat("Total Questions Searched")
+        link_value.configure(text = value_link)
+    
+    status_ques = duplicatesPrevent.append_to_history("Questions", ques)
+    if status_ques != 404:
+        updateDash.update_stat("Total Questions Searched")
+        value_ques = updateDash.get_stat("Total Questions Searched")
+        question_value.configure(text = value_ques)
+    
 
-def on_question_row_select(event):
-    selected_item = tree_for_comp.focus()
-    if selected_item:
-        values = tree_for_comp.item(selected_item, 'values')
-        copy_to_clipboard(values[0])
+    messagebox.showinfo("Copied", f"Content copied to clipboard:\n{text}")
 
 def clear_show_tree_for_id():
     for row in tree_for_id.get_children():
@@ -205,6 +235,7 @@ def show_tree_for_comp(data):
     tree_for_comp.pack(side="left", fill="both", expand=True)
     vsb2.pack(side="right", fill="y")
     tree_for_comp.bind("<<TreeviewSelect>>", on_question_row_select)
+    
 def clear_show_tree_for_comp():
     for row in tree_for_comp.get_children():
         tree_for_comp.delete(row)
@@ -249,7 +280,7 @@ def on_question_row_select(event):
         funcCompany = sortingDataCollection()
         for idd in funcCompany.data_ldict:
             if idd["id"] == int(values[0]):
-                copy_to_clipboard(idd["link"])
+                copy_to_clipboard(idd["link"], values[0])
                 break
 
 win = Tk()
@@ -277,20 +308,45 @@ dashboard_frame.propagate(False)
 dashboard_frame.place(x = 20, y = 50)
 
 
-total_link_visited = ctk.CTkLabel(dashboard_frame, text="Total Link Visited:", font=("poppins", 18, 'bold'), fg_color="white", bg_color="White",
-                                  text_color="Blue", justify = "left")
+total_links = updateDash.get_stat("Total Link Copied")
+total_companies = updateDash.get_stat("Total Companies Searched")
+total_questions = updateDash.get_stat("Total Questions Searched")
 
-total_link_visited.pack(anchor = 'nw', padx = 20, pady = (20, 10))
+# Total Link Visited
+link_frame = ctk.CTkFrame(dashboard_frame, fg_color="white")
+link_frame.pack(anchor='nw', padx=20, pady=(20, 10), fill='x')
 
-total_companies_searched = ctk.CTkLabel(dashboard_frame, text="Total Companies Searched:", font=("poppins", 18, 'bold'), fg_color="white", bg_color="White",
-                                  text_color="Blue", justify = "left")
+total_link_label = ctk.CTkLabel(link_frame, text="Total Link Visited:", font=("poppins", 18, 'bold'),
+                                fg_color="white", text_color="blue", justify="left", bg_color="white")
+total_link_label.pack(side='left')
 
-total_companies_searched.pack(anchor = 'nw', padx = 20, pady = (10, 10))
+link_value = ctk.CTkLabel(link_frame, text=str(total_links), font=("poppins", 18),
+                          fg_color="white", text_color="black", bg_color="white")
+link_value.pack(side='left', padx=(10, 0))
 
-total_questions_searched = ctk.CTkLabel(dashboard_frame, text="Total Questions Searched:", font=("poppins", 18, 'bold'), fg_color="white", bg_color="White",
-                                  text_color="Blue", justify = "left")
+# Total Companies Searched
+company_frame = ctk.CTkFrame(dashboard_frame, fg_color="white")
+company_frame.pack(anchor='nw', padx=20, pady=(10, 10), fill='x')
 
-total_questions_searched.pack(anchor = 'nw', padx = 20, pady = (10, 20))
+total_companies_label = ctk.CTkLabel(company_frame, text="Total Companies Searched:", font=("poppins", 18, 'bold'),
+                                     fg_color="white", text_color="blue", justify="left", bg_color="white")
+total_companies_label.pack(side='left')
+
+company_value = ctk.CTkLabel(company_frame, text=str(total_companies), font=("poppins", 18),
+                             fg_color="white", text_color="black", bg_color="white")
+company_value.pack(side='left', padx=(10, 0))
+
+# Total Questions Searched
+question_frame = ctk.CTkFrame(dashboard_frame, fg_color="white")
+question_frame.pack(anchor='nw', padx=20, pady=(10, 20), fill='x')
+
+total_questions_label = ctk.CTkLabel(question_frame, text="Total Questions Searched:", font=("poppins", 18, 'bold'),
+                                     fg_color="white", text_color="blue", justify="left", bg_color="white")
+total_questions_label.pack(side='left')
+
+question_value = ctk.CTkLabel(question_frame, text=str(total_questions), font=("poppins", 18),
+                              fg_color="white", text_color="black", bg_color="white")
+question_value.pack(side='left', padx=(10, 0))
 
 
 
@@ -335,21 +391,25 @@ q_name.grid(row=0, column=0, columnspan=4, sticky="w", padx=10, pady=(10, 2))
 q_type = ctk.CTkLabel(ques_info_frame, text="Difficulty:", font=("poppins", 12), fg_color="white", bg_color="white", text_color="Black")
 q_type.grid(row=1, column=0, sticky="w", padx=10)
 
-q_type_val = ctk.CTkLabel(ques_info_frame, text="Medium", font=("poppins", 12, 'bold'), fg_color="white", bg_color="white", text_color="Black")
+q_type_val = ctk.CTkLabel(ques_info_frame, text="", font=("poppins", 12, 'bold'), fg_color="white", bg_color="white", text_color="Black")
 q_type_val.grid(row=1, column=1, sticky="w", padx=5)
 
 q_accept = ctk.CTkLabel(ques_info_frame, text="Acceptance:", font=("poppins", 12), fg_color="white", bg_color="white", text_color="Black")
 q_accept.grid(row=1, column=2, sticky="w", padx=10)
 
-q_accept_val = ctk.CTkLabel(ques_info_frame, text="65%", font=("poppins", 12, 'bold'), fg_color="white", bg_color="white", text_color="Black")
+q_accept_val = ctk.CTkLabel(ques_info_frame, text="", font=("poppins", 12, 'bold'), fg_color="white", bg_color="white", text_color="Black")
 q_accept_val.grid(row=1, column=3, sticky="w", padx=5)
 
 # ROW 3 - Total Companies
-ttl_companies = ctk.CTkLabel(ques_info_frame, text="Total Companies: 12", font=("poppins", 12), fg_color="white", bg_color="white", text_color="Black")
+ttl_companies = ctk.CTkLabel(ques_info_frame, text="Total Companies:", font=("poppins", 12), fg_color="white", bg_color="white", text_color="Black")
 ttl_companies.grid(row=2, column=0, columnspan=2, sticky="w", padx=10, pady=(5, 2))
 
+copy_btn = ctk.CTkButton(ques_info_frame, text="Copy Link", font=("poppins", 12), fg_color="#007BFF", text_color="white", corner_radius=5,
+                         width=120, height=25, cursor = "hand2", command=copylink_by_id)
+copy_btn.grid(row=2, column=2, columnspan=2, sticky="e", padx=(40,0), pady=(5, 2))
+
 # ROW 4 - Question Link
-q_link = ctk.CTkLabel(ques_info_frame, text="Question Link: https://...", font=("poppins", 12), fg_color="white", bg_color="white", text_color="Black")
+q_link = ctk.CTkLabel(ques_info_frame, text="Question Link:", font=("poppins", 12), fg_color="white", bg_color="white", text_color="Black")
 q_link.grid(row=3, column=0, columnspan=4, sticky="w", padx=10, pady=(5, 10))
 
 # Company Info Frame
@@ -361,15 +421,15 @@ company_name = ctk.CTkLabel(company_info_frame, text="Company:", font=("poppins"
                             fg_color="white", bg_color="white", text_color="Black")
 company_name.grid(row=0, column=0, columnspan=4, sticky="w", padx=10, pady=(10, 2))
 # ROW 2 - Easy | Medium | Hard (Optimized spacing)
-easy_text = ctk.CTkLabel(company_info_frame, text="Easy: 12", font=("poppins", 12),
+easy_text = ctk.CTkLabel(company_info_frame, text="Easy:", font=("poppins", 12),
                          fg_color="white", bg_color="white", text_color="Black")
 easy_text.grid(row=1, column=0, sticky="w", padx=(10, 30))
 
-medium_text = ctk.CTkLabel(company_info_frame, text="Medium: 18", font=("poppins", 12),
+medium_text = ctk.CTkLabel(company_info_frame, text="Medium:", font=("poppins", 12),
                            fg_color="white", bg_color="white", text_color="Black")
 medium_text.grid(row=1, column=1, sticky="w", padx=(40, 30))
 
-hard_text = ctk.CTkLabel(company_info_frame, text="Hard: 6", font=("poppins", 12),
+hard_text = ctk.CTkLabel(company_info_frame, text="Hard:", font=("poppins", 12),
                          fg_color="white", bg_color="white", text_color="Black")
 hard_text.grid(row=1, column=2, sticky="w", padx=(40, 30))
 
@@ -379,7 +439,7 @@ total_label = ctk.CTkLabel(company_info_frame, text="Total Questions:", font=("p
                            fg_color="white", bg_color="white", text_color="Black")
 total_label.grid(row=2, column=0, sticky="w", padx=10, pady=(5, 10))
 
-total_value = ctk.CTkLabel(company_info_frame, text="36", font=("poppins", 12, 'bold'),
+total_value = ctk.CTkLabel(company_info_frame, text="", font=("poppins", 12, 'bold'),
                            fg_color="white", bg_color="white", text_color="Black")
 total_value.grid(row=2, column=1, sticky="w", padx=5, pady=(5, 10))
 
