@@ -80,6 +80,9 @@ def on_enter_search(event):
             q_accept_val.configure(text = FindClass.acceptance)
             ttl_companies.configure(text = f"Total Companies:{FindClass.total}")
             q_link.configure(text = FindClass.link)
+
+            clear_show_tree_for_id()
+            show_tree_for_id(FindClass.companies)
         elif r_val == 101:
             messagebox.showerror("No Input", "First enter the question number!")
         else:
@@ -94,6 +97,9 @@ def on_enter_search(event):
             medium_text.configure(text = f"Medium   {str(company.medium)}")
             hard_text.configure(text =  f"Hard   {str(company.hard)}")
             total_value.configure(text = f"{str(company.totalq)}")
+
+            clear_show_tree_for_comp()
+            show_tree_for_comp(data = company.data_ldict)
 
 
 
@@ -123,6 +129,11 @@ def on_keypress(event):
 
 def on_cb_for_id_toggle():
     if cb_for_id.get():
+        tree_for_comp.pack_forget()
+        vsb2.pack_forget()
+        infolabel.pack(padx = 140, pady = 120)
+        if search_entry.get():
+            search_entry.delete(0, END)
         cb_for_comp.deselect()
         search_entry.configure(placeholder_text="Search Question Number")
         company_info_frame.pack_forget()
@@ -136,6 +147,11 @@ def on_cb_for_id_toggle():
 
 def on_cb_for_comp_toggle():
     if cb_for_comp.get():
+        tree_for_id.pack_forget()
+        vsb.pack_forget()
+        infolabel.pack(padx = 140, pady = 120)
+        if search_entry.get():
+            search_entry.delete(0, END)
         cb_for_id.deselect()
         search_entry.configure(placeholder_text="Search Company Name")
         ques_info_frame.pack_forget()
@@ -143,6 +159,41 @@ def on_cb_for_comp_toggle():
     else:
         if not cb_for_id.get():
             cb_for_comp.select()  # Re-check it
+
+
+def show_tree_for_id(data:list[dict])->None:
+    infolabel.pack_forget()
+    # Insert data into treeview
+    for idx, item in enumerate(data, start=1):
+        tree_for_id.insert("", "end", values=(idx, item['company_name'], round(item['frequency'], 6)))
+
+    # Add Treeview to the window
+    tree_for_id.pack(side="left", fill="both", expand=True)
+    vsb.pack(side="right", fill="y")
+
+
+def clear_show_tree_for_id():
+    for row in tree_for_id.get_children():
+        tree_for_id.delete(row)
+
+def show_tree_for_comp(data):
+    infolabel.pack_forget()
+    for q in data:
+        tree_for_comp.insert("", "end", values=(
+            q['id'],
+            q['question'],
+            round(q['frequency'], 4),
+            q['difficulty'].capitalize(),
+            q['acceptance'],
+        ))
+
+    tree_for_comp.pack(side="left", fill="both", expand=True)
+    vsb2.pack(side="right", fill="y")
+
+def clear_show_tree_for_comp():
+    for row in tree_for_id.get_children():
+        tree_for_id.delete(row)
+
 win = Tk()
 
 win.title("LeetCodePrepMate-Solve the right questions for your dream companies.")
@@ -274,33 +325,55 @@ total_value = ctk.CTkLabel(company_info_frame, text="36", font=("poppins", 12, '
                            fg_color="white", bg_color="white", text_color="Black")
 total_value.grid(row=2, column=1, sticky="w", padx=5, pady=(5, 10))
 
-dashboard_frame3 = ctk.CTkFrame(main_canvas, bg_color="white", fg_color="white", width=700, height=270,
+dataTreeFrame = ctk.CTkFrame(main_canvas, bg_color="white", fg_color="white", width=700, height=270,
                                 border_width=1, border_color='black')
-dashboard_frame3.place(x = 20, y = 315)
+dataTreeFrame.place(x = 20, y = 315)
 
-# companies = ["Apple", "Google", "Microsoft", "Amazon", "Meta"]
+vsb = ttk.Scrollbar(dataTreeFrame, orient="vertical")
+
+tree_for_id = ttk.Treeview(dataTreeFrame, columns=("SLNO", "Companies", "Frequency"), show="headings",yscrollcommand=vsb.set)
+vsb.config(command=tree_for_id.yview)
 
 
-# # Define Treeview
-# columns = ("SLNO", "Companies")
-# tree = ttk.Treeview(dashboard_frame3, columns=columns, show="headings")
+# Define columns
+tree_for_id.heading("SLNO", text="SLNO")
+tree_for_id.heading("Companies", text="Companies")
+tree_for_id.heading("Frequency", text="Frequency")
 
-# # Define headings
-# tree.heading("SLNO", text="SLNO")
-# tree.heading("Companies", text="Companies")
+# Set column widths
+tree_for_id.column("SLNO", width=50, anchor="center")
+tree_for_id.column("Companies", width=200, anchor="w")
+tree_for_id.column("Frequency", width=150, anchor="center")
 
-# # Define column widths
-# tree.column("SLNO", width=50, anchor=CENTER)
-# tree.column("Companies", width=200, anchor=W)
 
-# # Insert companies with auto SLNO
-# for idx, name in enumerate(companies, start=1):
-#     tree.insert("", END, values=(idx, name))
 
-# # Add Treeview to Frame
-# tree.pack(fill=BOTH, expand=True)
+vsb2 = ttk.Scrollbar(dataTreeFrame, orient="vertical")
+tree_for_comp = ttk.Treeview(
+    dataTreeFrame,
+    columns=("ID", "Question", "Frequency", "Difficulty", "Acceptance"),
+    show="headings",
+    yscrollcommand=vsb2.set
+)
+vsb2.config(command=tree_for_comp.yview)
 
-infolabel = ctk.CTkLabel(dashboard_frame3, text="To see data search companies or Question Number",
+# Define headings
+tree_for_comp.heading("ID", text="ID")
+tree_for_comp.heading("Question", text="Question")
+tree_for_comp.heading("Frequency", text="Frequency")
+tree_for_comp.heading("Difficulty", text="Difficulty")
+tree_for_comp.heading("Acceptance", text="Acceptance")
+
+
+# Set column properties
+tree_for_comp.column("ID", width=50, anchor="center")
+tree_for_comp.column("Question", width=180, anchor="w")
+tree_for_comp.column("Frequency", width=100, anchor="center")
+tree_for_comp.column("Difficulty", width=100, anchor="center")
+tree_for_comp.column("Acceptance", width=100, anchor="center")
+
+
+
+infolabel = ctk.CTkLabel(dataTreeFrame, text="To see data search companies or Question Number",
                          font=("poppins", 18), fg_color="white", bg_color="white", text_color="black")
 infolabel.pack(padx = 140, pady = 120)
 
@@ -325,5 +398,9 @@ medium_btn.pack(pady = (0, 10))
 easy_btn = ctk.CTkButton(custom_btn_frame, text="Easy", font=("poppins", 15, 'bold'), fg_color="Green", bg_color="white",
                          text_color="black", corner_radius=20, cursor = 'hand2')
 easy_btn.pack(pady = (0, 10))
+
+all_btn = ctk.CTkButton(custom_btn_frame, text="Reset", font=("poppins", 15, 'bold'), fg_color="black", bg_color="white",
+                         text_color="white", corner_radius=20, cursor = 'hand2')
+all_btn.pack(pady = (0, 10))
 
 win.mainloop()
