@@ -40,7 +40,10 @@ class FindDataByCompany:
         self.totalq : int
         self.easy : int
         self.medium : int
-        self.hard : int 
+        self.hard : int
+        self.only_hard : list[dict]
+        self.only_easy : list[dict]
+        self.only_medium : list[dict]
 
     def findDataByCompany(self, data:dict = None, cname:str = None):
         if data is None or cname is None:
@@ -84,6 +87,26 @@ class FindDataByCompany:
             return self.drop_down_list
         else:
             return []
+        
+    def sortedDifficulty(self, data:list[dict]):
+
+        sorted_hard = []
+        sorted_medium = []
+        sorted_easy = []
+
+        for details in data:
+            try:
+                if details["difficulty"] == "hard":
+                    sorted_hard.append(details)
+                elif details["difficulty"] == "medium":
+                    sorted_medium.append(details)
+                elif details["difficulty"] == "easy":
+                    sorted_easy.append(details)
+                else:
+                    return 101
+            except KeyError:
+                return 101
             
-
-
+            self.only_easy = sorted_easy
+            self.only_medium = sorted_medium
+            self.only_hard = sorted_hard

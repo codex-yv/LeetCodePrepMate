@@ -54,7 +54,7 @@ class FindDataByID:
         self.difficulty:str
         self.question: str
         self.link: str
-        self.companies: list[dict[str, float]]
+        self.companies: list[dict]
         self.total: int
 
     def findDatabyId(self, k:str = None, s:dict = None):
