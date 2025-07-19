@@ -66,9 +66,9 @@ def dropDown(words):
         label.bind("<Button-1>", label_clicked)
 
 char_list = []
-
+comp_name_glo = []
 def on_enter_search(event):
-    global all_data_by_id, all_company
+    global all_data_by_id, all_company, comp_name_glo
     if cb_for_id.get():
         entry_val = search_entry.get()
         FindClass = searchById.FindDataByID()
@@ -89,6 +89,7 @@ def on_enter_search(event):
             messagebox.showinfo("Not found", "Question number not found!")
     else:
         comp_name = search_entry.get()
+        comp_name_glo.insert(0, comp_name)
         company = searchByCompany.FindDataByCompany()
         find_comp = company.findDataByCompany(all_company, cname=comp_name)
         if find_comp not in [101, 404]:
@@ -134,6 +135,8 @@ def on_cb_for_id_toggle():
         infolabel.pack(padx = 140, pady = 120)
         if search_entry.get():
             search_entry.delete(0, END)
+        
+        custom_btn_frame.place_forget()
         cb_for_comp.deselect()
         search_entry.configure(placeholder_text="Search Question Number")
         company_info_frame.pack_forget()
@@ -152,6 +155,8 @@ def on_cb_for_comp_toggle():
         infolabel.pack(padx = 140, pady = 120)
         if search_entry.get():
             search_entry.delete(0, END)
+        
+        custom_btn_frame.place(x = 730, y = 315)
         cb_for_id.deselect()
         search_entry.configure(placeholder_text="Search Company Name")
         ques_info_frame.pack_forget()
@@ -171,6 +176,16 @@ def show_tree_for_id(data:list[dict])->None:
     tree_for_id.pack(side="left", fill="both", expand=True)
     vsb.pack(side="right", fill="y")
 
+def copy_to_clipboard(text):
+    win.clipboard_clear()
+    win.clipboard_append(text)
+    messagebox.showinfo("Copied", f"Content copied to clipboard:\n{text}")
+
+def on_question_row_select(event):
+    selected_item = tree_for_comp.focus()
+    if selected_item:
+        values = tree_for_comp.item(selected_item, 'values')
+        copy_to_clipboard(values[0])
 
 def clear_show_tree_for_id():
     for row in tree_for_id.get_children():
@@ -189,10 +204,53 @@ def show_tree_for_comp(data):
 
     tree_for_comp.pack(side="left", fill="both", expand=True)
     vsb2.pack(side="right", fill="y")
-
+    tree_for_comp.bind("<<TreeviewSelect>>", on_question_row_select)
 def clear_show_tree_for_comp():
-    for row in tree_for_id.get_children():
-        tree_for_id.delete(row)
+    for row in tree_for_comp.get_children():
+        tree_for_comp.delete(row)
+
+def sortingDataCollection():
+    global comp_name_glo
+    if comp_name_glo:
+        company = searchByCompany.FindDataByCompany()
+        find_comp = company.findDataByCompany(all_company, cname=comp_name_glo[0])
+        sorted_infos = company.sortedDifficulty(company.data_ldict)
+        if sorted_infos != 101:
+            return company
+        else:
+            messagebox.showerror("Error", "Some internal error occurred!")
+    else:
+        messagebox.showinfo("Empty data", "Please give company name!")
+
+def sort_hard():
+    funcCompnay = sortingDataCollection()
+    clear_show_tree_for_comp()
+    show_tree_for_comp(funcCompnay.only_hard)
+    
+def sort_medium():
+    funcCompnay = sortingDataCollection()
+    clear_show_tree_for_comp()
+    show_tree_for_comp(funcCompnay.only_medium)
+
+def sort_easy():
+    funcCompnay = sortingDataCollection()
+    clear_show_tree_for_comp()
+    show_tree_for_comp(funcCompnay.only_easy)
+
+def reset_all():
+    funcCompnay = sortingDataCollection()
+    clear_show_tree_for_comp()
+    show_tree_for_comp(funcCompnay.data_ldict)
+
+def on_question_row_select(event):
+    selected_item = tree_for_comp.focus()
+    if selected_item:
+        values = tree_for_comp.item(selected_item, 'values')
+        funcCompany = sortingDataCollection()
+        for idd in funcCompany.data_ldict:
+            if idd["id"] == int(values[0]):
+                copy_to_clipboard(idd["link"])
+                break
 
 win = Tk()
 
@@ -380,27 +438,26 @@ infolabel.pack(padx = 140, pady = 120)
 
 custom_btn_frame = ctk.CTkFrame(main_canvas, fg_color="white", height=270, width=160)
 custom_btn_frame.propagate(False)
-custom_btn_frame.place(x = 730, y = 315)
 
 sort_label = ctk.CTkLabel(custom_btn_frame, text="Sort by:", font=("poppins", 18, 'bold'), fg_color="white",
                           bg_color="white", text_color="Black")
-sort_label.pack(pady = (20, 50))
+sort_label.pack(pady = (20, 20))
 
 hard_btn = ctk.CTkButton(custom_btn_frame, text="Hard", font=("poppins", 15, 'bold'), fg_color="red", bg_color="white",
-                         text_color="black", corner_radius=20, cursor = 'hand2')
+                         text_color="black", corner_radius=20, cursor = 'hand2', command = sort_hard)
 hard_btn.pack(pady = (0, 10))
 
 
 medium_btn = ctk.CTkButton(custom_btn_frame, text="Medium", font=("poppins", 15, 'bold'), fg_color="yellow", bg_color="white",
-                         text_color="black", corner_radius=20, cursor = 'hand2')
+                         text_color="black", corner_radius=20, cursor = 'hand2', command = sort_medium)
 medium_btn.pack(pady = (0, 10))
 
 easy_btn = ctk.CTkButton(custom_btn_frame, text="Easy", font=("poppins", 15, 'bold'), fg_color="Green", bg_color="white",
-                         text_color="black", corner_radius=20, cursor = 'hand2')
+                         text_color="black", corner_radius=20, cursor = 'hand2', command = sort_easy)
 easy_btn.pack(pady = (0, 10))
 
 all_btn = ctk.CTkButton(custom_btn_frame, text="Reset", font=("poppins", 15, 'bold'), fg_color="black", bg_color="white",
-                         text_color="white", corner_radius=20, cursor = 'hand2')
+                         text_color="white", corner_radius=20, cursor = 'hand2', command=reset_all)
 all_btn.pack(pady = (0, 10))
 
 win.mainloop()
