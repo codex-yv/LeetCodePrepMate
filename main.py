@@ -67,6 +67,7 @@ def dropDown(words):
 char_list = []
 comp_name_glo = []
 q_links = ["Not Found"]
+
 def on_enter_search(event):
     global all_data_by_id, all_company, comp_name_glo, q_links
     if cb_for_id.get():
@@ -138,22 +139,26 @@ def on_keypress(event):
     if cb_for_comp.get():
         scroll_frame.delete_all_labels()
         global char_list, all_company
+    
         if event.char and event.keysym not in  ["space", "BackSpace"] :
-            char_list.append(event.char)
-            drop_down_data = company.dropDownList(all_company, char_list)
+            char_list.append((event.char).lower())
+            drop_down_data = company.dropDownList(char_list)
             dropDown(drop_down_data)
         elif event.char and event.keysym in ["space"]:
             char_list.append("_")
-            drop_down_data = company.dropDownList(all_company, char_list)
+            drop_down_data = company.dropDownList(char_list)
             dropDown(drop_down_data)
         elif event.char and event.keysym in ["BackSpace"]:
             try:
                 char_list.pop()
-                drop_down_data = company.dropDownList(all_company, char_list)
+                drop_down_data = company.dropDownList(char_list)
                 dropDown(drop_down_data)
             except IndexError:
-                drop_down_data = company.dropDownList(all_company, cname=[])
+                drop_down_data = company.dropDownList(cname=[])
                 dropDown(drop_down_data)
+
+        if not char_list:
+            scroll_frame.remove_scrollable_frame()
     else:
         pass
 

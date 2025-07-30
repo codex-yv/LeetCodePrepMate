@@ -1,6 +1,6 @@
 import os
 import csv
-
+from utils import searchByCompany
 def getDataByCompany():
     base_dir = os.path.dirname(__file__)
     folder_path = os.path.join(base_dir, '..', 'companies')
@@ -44,6 +44,7 @@ class FindDataByCompany:
         self.only_hard : list[dict]
         self.only_easy : list[dict]
         self.only_medium : list[dict]
+        self.datac = searchByCompany.getDataByCompany()
 
     def findDataByCompany(self, data:dict = None, cname:str = None):
         if data is None or cname is None:
@@ -69,22 +70,16 @@ class FindDataByCompany:
         except KeyError:
             return 404
     
-    def dropDownList(self, data:dict = None, cname:list = None):
-        if len(cname) !=0:
-            self.data_list = data.keys()
-            self.drop_down_list = []
+    def dropDownList(self, cname:list = None):
+        if cname:
+            drop_down_list = []
 
-            for comp in self.data_list:
-                self.Add = True
-                for char in cname:
-                    if char.lower() not in comp:
-                        self.Add = False
-                        break
+            chars = set(cname)
+            for comp in self.datac:
+                if chars <= set(comp):
+                    drop_down_list.append(comp)
 
-                if self.Add is True:
-                    self.drop_down_list.append(comp)
-
-            return self.drop_down_list
+            return drop_down_list
         else:
             return []
         
