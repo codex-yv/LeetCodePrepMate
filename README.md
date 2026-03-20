@@ -40,21 +40,21 @@ LeetCodePrepMate is a Python-based desktop app built with Tkinter to help you fo
 
 ### 🔧 Startup View
 
-! [Startup View] (<img width="1123" height="780" alt="Screenshot 2025-07-20 012515" src="https://github.com/user-attachments/assets/3bf7ffc3-2d20-4a39-b532-f49af34005d3" />)
+<img width="1123" height="780" alt="Screenshot 2025-07-20 012515" src="https://github.com/user-attachments/assets/3bf7ffc3-2d20-4a39-b532-f49af34005d3" />
 
 ### 🔍 Search by Question Number
-! [Search by Question] (<img width="1124" height="783" alt="Screenshot 2025-07-20 012600" src="https://github.com/user-attachments/assets/37f8316b-4c82-4531-8f5f-fd5b7c3a6844" />)
+<img width="1124" height="783" alt="Screenshot 2025-07-20 012600" src="https://github.com/user-attachments/assets/37f8316b-4c82-4531-8f5f-fd5b7c3a6844" />
 
 ### 📈 Search by Company
-! [Search by Company] (<img width="1121" height="784" alt="Screenshot 2025-07-20 012647" src="https://github.com/user-attachments/assets/ae2f69f6-68e1-4aaa-9812-783bf3e6ba2e" />)
+<img width="1121" height="784" alt="Screenshot 2025-07-20 012647" src="https://github.com/user-attachments/assets/ae2f69f6-68e1-4aaa-9812-783bf3e6ba2e" />
 
 <img width="1122" height="787" alt="Screenshot 2025-07-20 012725" src="https://github.com/user-attachments/assets/a46e201b-c583-4db0-9166-d465cde8e09f" />
 
 ### 📋 Copy Problem Link
-![Copy Link] (<img width="1128" height="789" alt="Screenshot 2025-07-20 012804" src="https://github.com/user-attachments/assets/1ac82364-6357-4bc6-ab52-a4ac861fc5e3" />)
+<img width="1128" height="789" alt="Screenshot 2025-07-20 012804" src="https://github.com/user-attachments/assets/1ac82364-6357-4bc6-ab52-a4ac861fc5e3" />
 
 ### 🎨 Sorted View by Medium Difficulty
-! [Medium Questions] (<img width="1123" height="783" alt="Screenshot 2025-07-20 012839" src="https://github.com/user-attachments/assets/6413af11-65c5-46d8-b62c-010bd567bbeb" />)
+<img width="1123" height="783" alt="Screenshot 2025-07-20 012839" src="https://github.com/user-attachments/assets/6413af11-65c5-46d8-b62c-010bd567bbeb" />
 
 ---
 
@@ -77,7 +77,7 @@ LeetCodePrepMate is a Python-based desktop app built with Tkinter to help you fo
 
 - **Python**
 - **Tkinter** (GUI Framework)
-- **JSON** (For company-question mapping, stats, history)
+- **Sqlite** (For database)
 
 ---
 
@@ -92,10 +92,11 @@ LeetCodePrepMate is a Python-based desktop app built with Tkinter to help you fo
 ---
 
 ## 📥 Installation
+### Cloning
+- Clone the repo
+- Setup virtual environment
+- Install requirements
+- Run main.py
 
-Make sure you have Python installed. Then run:
-
-```bash
-git clone https://github.com/yourusername/LeetCodePrepMate.git
-cd LeetCodePrepMate
-python LeetCodePrepMate.py
+### Install `.exe`
+<a href = "https://github.com/codex-yv/LeetCodePrepMate/releases/tag/lcpm-v1"> LeetCodePrepMate-v1 (exe) </a>
