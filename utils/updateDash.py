@@ -1,11 +1,17 @@
 import json
 import os
+import sys
 from tkinter import messagebox
 
-# Path to your JSON file
-base_dir = os.path.dirname(__file__)
+# Resolve base dir: next to the .exe when frozen, project root when running normally
+if getattr(sys, 'frozen', False):
+    # Running inside a PyInstaller bundle — use the directory containing the exe
+    _project_root = os.path.dirname(sys.executable)
+else:
+    # Running as a plain script — go two levels up from utils/
+    _project_root = os.path.join(os.path.dirname(__file__), '..')
 
-json_file_path = os.path.join(base_dir, '..', 'config','dashboard.json')
+json_file_path = os.path.join(_project_root, 'config', 'dashboard.json')
 
 # Default structure if the file doesn't exist
 default_data = {
@@ -16,6 +22,7 @@ default_data = {
 
 def load_json(file_path):
     if not os.path.exists(file_path):
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, 'w') as f:
             json.dump(default_data, f, indent=4)
         return default_data

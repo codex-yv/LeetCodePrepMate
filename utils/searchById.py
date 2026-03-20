@@ -1,63 +1,84 @@
-# s = {1:{"Companies_List":[{"Company":"c1", "frequency":0.322323 }], "acceptance":32, "difficulty":"Medium", "Link":"https://"}}
-s2 = {"company_name":[{"id":1, "question":"q1", "frequency": 0.2323, "difficulty":"medium", "acceptance":45, "link":"https" }]}
-
 import os
-import csv
+import sys
+import sqlite3
+
+def _get_db_connection():
+    if getattr(sys, 'frozen', False):
+        base = sys._MEIPASS
+    else:
+        base = os.path.join(os.path.dirname(__file__), '..')
+    db_path = os.path.join(base, 'companies', 'companies.db')
+    return sqlite3.connect(db_path)
 
 def getDatabyId():
-    base_dir = os.path.dirname(__file__)
-    folder_path = os.path.join(base_dir, '..', 'companies')
+    """
+    Returns a dict keyed by question ID (str), each value being:
+      {
+        "Companies_List": [{"company_name": str, "frequency": float}, ...],
+        "acceptance": float,
+        "difficulty": str,
+        "question": str,
+        "Link": str
+      }
+    Aggregates across all company tables in the database.
+    """
+    conn = _get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
+    tables = [row[0] for row in cur.fetchall()]
 
     s = {}
 
-    # Process each CSV file
-    for file_name in os.listdir(folder_path):
-        if file_name.endswith('.csv'):
-            file_path = os.path.join(folder_path, file_name)
-            company_name = os.path.splitext(file_name)[0]  # e.g., 'google' from 'google.csv'
+    for table in tables:
+        try:
+            cur.execute(f'SELECT ID, Title, Acceptance, Difficulty, Frequency, Leetcode_Question_Link FROM "{table}"')
+            rows = cur.fetchall()
+            for row in rows:
+                try:
+                    raw_id, title, acceptance_str, difficulty, frequency_str, link = row
 
-            with open(file_path, newline='', encoding='utf-8') as csvfile:
-                reader = csv.DictReader(csvfile)
-                for row in reader:
-                    qid = row['ID']
-                    title = row['Title']
-                    acceptance_str = row['Acceptance']
-                    frequency_str = row['Frequency']
-                    difficulty = row['Difficulty']
-                    link = row['Leetcode Question Link']
+                    qid = str(raw_id).strip()
 
                     # Clean and convert fields
-                    acceptance = float(acceptance_str.strip('%')) if acceptance_str else 0
-                    frequency = float(frequency_str) if frequency_str else 0
+                    acceptance = float(str(acceptance_str).strip('%')) if acceptance_str else 0.0
+                    frequency = float(frequency_str) if frequency_str else 0.0
 
-                    # If this is a new ID, add its full structure
                     if qid not in s:
                         s[qid] = {
                             "Companies_List": [],
                             "acceptance": acceptance,
-                            "difficulty": difficulty,
-                            "question": title,
-                            "Link": link
+                            "difficulty": difficulty.strip() if difficulty else "",
+                            "question": title.strip() if title else "",
+                            "Link": link.strip() if link else ""
                         }
 
-                    # Always add the company info to the list
+                    # Always add the company entry
                     s[qid]["Companies_List"].append({
-                        "company_name": company_name,
+                        "company_name": table,
                         "frequency": frequency
                     })
-    
+
+                except (ValueError, TypeError) as e:
+                    print(f"Skipping row in table '{table}' due to error: {e}")
+
+        except Exception as e:
+            print(f"Error reading table '{table}': {e}")
+
+    conn.close()
     return s
+
 
 class FindDataByID:
     def __init__(self):
         self.acceptance: float
-        self.difficulty:str
+        self.difficulty: str
         self.question: str
         self.link: str
-        self.companies: list[dict]
+        self.companies: list
         self.total: int
 
-    def findDatabyId(self, k:str = None, s:dict = None):
+    def findDatabyId(self, k: str = None, s: dict = None):
         if k is None:
             return 101
         try:
@@ -70,4 +91,3 @@ class FindDataByID:
             self.total = len(self.companies)
         except KeyError:
             return 404
-        

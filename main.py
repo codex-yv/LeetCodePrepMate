@@ -4,6 +4,15 @@ from tkinter import ttk
 from tkinter import messagebox
 from PIL import Image, ImageTk
 import os
+import sys
+
+def resource_path(*rel_parts):
+    """Return absolute path to a resource, works for dev and PyInstaller --onefile."""
+    if getattr(sys, 'frozen', False):
+        base = sys._MEIPASS          # temp folder PyInstaller extracts into
+    else:
+        base = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base, *rel_parts)
 from utils import searchById, searchByCompany, updateDash, duplicatesPrevent
 all_data_by_id = searchById.getDatabyId()
 all_company = searchByCompany.getDataByCompany()
@@ -311,8 +320,7 @@ win = Tk()
 
 win.title("LeetCodePrepMate-Solve the right questions for your dream companies.")
 win.geometry("900x600")
-cwd = os.getcwd()
-icon=os.path.join(cwd, "Assets", "programming.ico")
+icon = resource_path("Assets", "programming.ico")
 win.iconbitmap(icon)
 
 main_frame = Frame(win, bg="#fbfcfc")
@@ -324,8 +332,7 @@ main_canvas.propagate(False)
 main_canvas.pack(fill='both', expand=True)
 
 
-cwd = os.getcwd()
-imagepath1=os.path.join(cwd, "Assets", "mainImg6.png") #cwd+"\\Assets\\UIUX\\passwordss.png"
+imagepath1 = resource_path("Assets", "mainImg6.png")
 openphoto1=Image.open(imagepath1).resize((900,600))
 bgimage1=ImageTk.PhotoImage(openphoto1)
 main_canvas.create_image(450,300, image=bgimage1)
@@ -385,8 +392,7 @@ info_canvas=Canvas(info_frame,bg='#FFFDEE',bd=0,highlightthickness=0, relief='ri
 info_canvas.propagate(False)
 info_canvas.pack(fill='both', expand=True)
 
-cwd = os.getcwd()
-imagepath2=os.path.join(cwd, "Assets", "infofrm4.png") #cwd+"\\Assets\\UIUX\\passwordss.png"
+imagepath2 = resource_path("Assets", "infofrm4.png")
 openphoto2=Image.open(imagepath2).resize((434,249))
 bgimage2=ImageTk.PhotoImage(openphoto2)
 info_canvas.create_image(219,126, image=bgimage2)

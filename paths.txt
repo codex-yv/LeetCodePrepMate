@@ -1,0 +1,2 @@
+C:\Users\Youraj Verma\AppData\Local\Programs\Python\Python310\lib\site-packages\customtkinter
+C:\Users\Youraj Verma\AppData\Local\Programs\Python\Python310\lib\site-packages\darkdetect

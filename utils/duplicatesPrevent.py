@@ -1,10 +1,14 @@
 import json
 import os
+import sys
 
-# Path to the history file
-base_dir = os.path.dirname(__file__)
+# Resolve base dir: next to the .exe when frozen, project root when running normally
+if getattr(sys, 'frozen', False):
+    _project_root = os.path.dirname(sys.executable)
+else:
+    _project_root = os.path.join(os.path.dirname(__file__), '..')
 
-history_file_path = os.path.join(base_dir, '..', 'config','history.json')
+history_file_path = os.path.join(_project_root, 'config', 'history.json')
 
 
 # Default structure if the file doesn't exist
@@ -16,6 +20,7 @@ default_history = {
 
 def load_history(file_path):
     if not os.path.exists(file_path):
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, 'w') as f:
             json.dump(default_history, f, indent=4)
         return default_history
